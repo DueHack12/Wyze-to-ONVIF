@@ -1,0 +1,37 @@
+name: RTSP to ONVIF for UniFi Protect
+version: "1.0.0"
+slug: rtsp_to_onvif
+description: Expose RTSP streams (e.g. docker-wyze-bridge) as virtual ONVIF cameras adoptable by UniFi Protect
+url: https://github.com/dlo747/RTSP-to-ONVIF-Unifi-Protect
+arch:
+  - aarch64
+  - amd64
+  - armv7
+startup: services
+boot: auto
+host_network: true
+privileged:
+  - NET_ADMIN
+options:
+  interface: eth0
+  debug: false
+  cameras: []
+schema:
+  interface: str
+  debug: bool
+  cameras:
+    - name: "match(^[A-Za-z][A-Za-z0-9]*$)"
+      target_host: str
+      target_rtsp_port: port?
+      target_snapshot_port: port?
+      rtsp_path: str
+      snapshot_path: str?
+      width: int
+      height: int
+      framerate: int
+      bitrate: int
+      server_port: port?
+      rtsp_proxy_port: port?
+      snapshot_proxy_port: port?
+      mac: str?
+      uuid: str?
