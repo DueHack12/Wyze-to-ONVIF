@@ -5,8 +5,11 @@ FROM ${BUILD_FROM}
 # HA Supervisor builds add-ons from its own ghcr.io/home-assistant/base image
 # regardless of build_from in build.yaml, so Node/npm aren't guaranteed to be
 # present from the FROM base — install them explicitly (no-op if already there).
+# Node is pinned to Alpine 3.20 (Node 20 LTS): upstream uses util.isDate,
+# which was removed in Node 23+, so the base repo's current nodejs crashes.
 RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient \
-    && (command -v npm >/dev/null 2>&1 || apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main nodejs npm)
+    && echo "@node320 https://dl-cdn.alpinelinux.org/alpine/v3.20/main" >> /etc/apk/repositories \
+    && (command -v npm >/dev/null 2>&1 || apk add --no-cache nodejs@node320 npm@node320)
 
 ENV NODE_ENV=production
 WORKDIR /app
