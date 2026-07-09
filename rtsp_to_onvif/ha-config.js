@@ -66,9 +66,11 @@ const config = {
             // The RTSP/snapshot proxies bind on all interfaces, so each camera
             // needs its own port; the ONVIF server binds per virtual IP, so
             // one server port is safe to share.
+            // 19554+: the 18554/18555 range is taken by other services on
+            // some hosts (this add-on shares the host network namespace).
             ports: {
                 server: cam.server_port || 8081,
-                rtsp: cam.rtsp_proxy_port || 18554 + index,
+                rtsp: cam.rtsp_proxy_port || 19554 + index,
                 snapshot: cam.snapshot_proxy_port || 18080 + index,
             },
         };

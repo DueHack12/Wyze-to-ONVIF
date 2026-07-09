@@ -35,7 +35,7 @@ Per camera:
 | `snapshot_path` | no | Snapshot path on the source. Defaults to `/snapshot/<name>.jpg`. Snapshots are not fully working upstream yet. |
 | `width`, `height`, `framerate`, `bitrate` | yes | Must match what the source stream actually delivers (bitrate in kb/s). Protect uses these as the advertised stream capabilities. |
 | `server_port` | no | ONVIF HTTP port on the camera's virtual IP. Default `8081`, safe to share between cameras. |
-| `rtsp_proxy_port` / `snapshot_proxy_port` | no | Local proxy ports. Auto-assigned uniquely per camera (`18554+n` / `18080+n`); only set them to resolve a port conflict. |
+| `rtsp_proxy_port` / `snapshot_proxy_port` | no | Local proxy ports. Auto-assigned uniquely per camera (`19554+n` / `18080+n`); only set them to resolve a port conflict. |
 | `mac` / `uuid` | no | Auto-generated on first start and persisted in `/data/onvif.yaml`. Only set to pin values explicitly. |
 
 ### Example (two Wyze cams via wyze-bridge at 192.168.1.20)
