@@ -2,16 +2,17 @@ ARG BUILD_FROM=node:22-alpine
 FROM ${BUILD_FROM}
 
 # dhclient  - pulls a DHCP lease for each virtual camera interface
-# arptables - drops the ARP replies the macvlan interfaces would otherwise send
-#             for the host's own IP (ARP flux -> UniFi "IP conflict"). We can't
-#             use the arp_ignore sysctl: host-network containers get a read-only
-#             /proc/sys. arptables only needs NET_ADMIN. See run.sh.
+# nftables  - drops the ARP replies the macvlan interfaces would otherwise send
+#             for the host's own IP (ARP flux -> UniFi "IP conflict"), via the
+#             nft `arp` family. We can't use the arp_ignore sysctl: host-network
+#             containers get a read-only /proc/sys. nft only needs NET_ADMIN.
+#             (arptables isn't packaged for Alpine; nftables is.) See run.sh.
 # HA Supervisor builds add-ons from its own ghcr.io/home-assistant/base image
 # regardless of build_from in build.yaml, so Node/npm aren't guaranteed to be
 # present from the FROM base — install them explicitly (no-op if already there).
 # Node is pinned to Alpine 3.20 (Node 20 LTS): upstream uses util.isDate,
 # which was removed in Node 23+, so the base repo's current nodejs crashes.
-RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient arptables \
+RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient nftables \
     && echo "@node320 https://dl-cdn.alpinelinux.org/alpine/v3.20/main" >> /etc/apk/repositories \
     && (command -v npm >/dev/null 2>&1 || apk add --no-cache nodejs@node320 npm@node320)
 
