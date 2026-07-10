@@ -61,6 +61,7 @@ Each camera you configure becomes its own virtual ONVIF device — a macvlan net
 | `target_host` | yes | IP or hostname of the RTSP source (your wyze-bridge host). |
 | `rtsp_path` | yes | Stream path on the source, e.g. `/front-door` for a wyze-bridge camera named `front-door`. |
 | `width`, `height`, `framerate`, `bitrate` | yes | Must match what the source stream actually delivers (bitrate in kb/s). Protect advertises these as the camera's capabilities. |
+| `ip` | no | A **static IP** for this camera's virtual interface, e.g. `192.168.40.247`. Must be on the same subnet as Home Assistant and free (ideally outside your DHCP pool). Omit to use DHCP. **Recommended** — see [Static IPs](#static-ips-recommended). |
 | `target_rtsp_port` | no | RTSP port of the source. Default `8554` (wyze-bridge default). |
 | `target_snapshot_port` | no | HTTP port of the source for snapshots. Default `5000`. |
 | `snapshot_path` | no | Snapshot path on the source. Defaults to `/snapshot/<name>.jpg`. |
@@ -70,7 +71,7 @@ Each camera you configure becomes its own virtual ONVIF device — a macvlan net
 
 ### Example
 
-Two Wyze cameras served by docker-wyze-bridge running on the same host (`192.168.40.213`):
+Two Wyze cameras served by docker-wyze-bridge running on the same host (`192.168.40.213`), each pinned to a static IP:
 
 ```yaml
 interface: end0
@@ -83,6 +84,7 @@ cameras:
     height: 1080
     framerate: 20
     bitrate: 2048
+    ip: 192.168.40.247
   - name: StageRight
     target_host: 192.168.40.213
     rtsp_path: /stageright
@@ -90,7 +92,16 @@ cameras:
     height: 1080
     framerate: 20
     bitrate: 2048
+    ip: 192.168.40.248
 ```
+
+### Static IPs (recommended)
+
+By default each virtual camera gets its IP from DHCP, tied to an auto-generated MAC stored in the app's `/data`. If you **uninstall and reinstall** the app, `/data` is wiped and new MACs are generated, so DHCP hands out new addresses and Protect sees the cameras as new devices.
+
+Setting a fixed **`ip`** per camera avoids this — static IPs are reproducible from your configuration and survive reinstalls. Pick a free address on the Home Assistant subnet, ideally outside your DHCP pool.
+
+For a camera to remain the *same device* in Protect across a reinstall, also pin its **`mac`** (Protect identifies third-party cameras by MAC). Setting both `ip` and `mac` makes a camera fully reproducible — re-entering the same config restores the exact same device. Grab the generated MAC from the app log or `/data/onvif.yaml` before reinstalling.
 
 ## Adopting in UniFi Protect
 

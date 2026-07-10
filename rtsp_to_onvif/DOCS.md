@@ -34,6 +34,7 @@ Per camera:
 | `rtsp_path` | yes | Stream path on the source, e.g. `/front-door` for wyze-bridge camera `front-door`. |
 | `snapshot_path` | no | Snapshot path on the source. Defaults to `/snapshot/<name>.jpg`. Snapshots are not fully working upstream yet. |
 | `width`, `height`, `framerate`, `bitrate` | yes | Must match what the source stream actually delivers (bitrate in kb/s). Protect uses these as the advertised stream capabilities. |
+| `ip` | no | A **static IP** for this camera's virtual interface, e.g. `192.168.40.247`. Must be on the same subnet as Home Assistant and free (ideally outside your DHCP pool). Omit to let DHCP assign one. Recommended — see [Static vs. DHCP](#static-vs-dhcp-recommended). |
 | `server_port` | no | ONVIF HTTP port on the camera's virtual IP. Default `8081`, safe to share between cameras. |
 | `rtsp_proxy_port` / `snapshot_proxy_port` | no | Local proxy ports. Auto-assigned uniquely per camera (`19554+n` / `18080+n`); only set them to resolve a port conflict. |
 | `mac` / `uuid` | no | Auto-generated on first start and persisted in `/data/onvif.yaml`. Only set to pin values explicitly. |
@@ -51,6 +52,7 @@ cameras:
     height: 1080
     framerate: 20
     bitrate: 2048
+    ip: 192.168.1.247
   - name: Garage
     target_host: 192.168.1.20
     rtsp_path: /garage
@@ -58,7 +60,26 @@ cameras:
     height: 1080
     framerate: 20
     bitrate: 2048
+    ip: 192.168.1.248
 ```
+
+### Static vs. DHCP (recommended)
+
+By default each virtual camera gets its IP from your DHCP server. That address
+is tied to the camera's auto-generated MAC, which lives in `/data`. If you
+**uninstall and reinstall** the app, `/data` is wiped, new MACs are generated,
+and DHCP hands out new IPs — so your cameras change address and Protect sees
+them as new devices.
+
+To avoid this, set a fixed **`ip`** per camera (as above). Choose an address on
+the Home Assistant subnet that is free and, ideally, outside your DHCP pool.
+Static IPs are reproducible from your configuration, so they survive reinstalls.
+
+For a camera to stay the *same device* in Protect across a reinstall, also pin
+its **`mac`** — Protect identifies third-party cameras by MAC. Setting both `ip`
+and `mac` makes a camera fully reproducible: re-entering the same config brings
+back the exact same device. You can copy the generated MAC from the app log
+or from `/data/onvif.yaml` before reinstalling.
 
 ## Adopting in UniFi Protect
 

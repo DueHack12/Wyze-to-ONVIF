@@ -25,6 +25,10 @@ RUN wget -qO /tmp/upstream.tar.gz "https://github.com/dlo747/RTSP-to-ONVIF-Unifi
     && tar -xzf /tmp/upstream.tar.gz -C /app --strip-components=1 \
     && rm /tmp/upstream.tar.gz
 
+# Patched copy of the pinned upstream file: adds per-camera static-IP support
+# (assign a fixed IPv4 instead of DHCP). Re-check it if UPSTREAM_SHA changes.
+COPY config-tools.js /app/src/config-tools.js
+
 RUN npm ci --omit=dev --silent
 
 COPY ha-config.js /ha-config.js
