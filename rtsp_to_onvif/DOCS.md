@@ -71,6 +71,19 @@ cameras:
    Third-party ONVIF cameras in Protect don't require credentials from this
    proxy; if prompted, any username/password works.
 
+## Troubleshooting
+
+- **UniFi VLAN/firewall rules.** If Protect adopts a camera but the stream
+  stays black, confirm your firewall policy allows traffic to the **virtual
+  camera IPs** (not just the Home Assistant host) and to the RTSP source host.
+  Add the camera IPs to the relevant allow rule.
+- **"IP address conflict" on the host IP.** The virtual cameras share the
+  host's L2 network, so the host would otherwise answer ARP for its own IP out
+  of the camera interfaces (ARP flux), which UniFi flags as a conflict. The
+  add-on installs an nftables `arp`-family rule on every start to suppress
+  this automatically — no action needed. (The usual `arp_ignore` sysctl can't
+  be used: host-network add-on containers get a read-only `/proc/sys`.)
+
 ## Notes and limitations
 
 - Streams must be H.264 (wyze-bridge outputs H.264 by default). PTZ, audio

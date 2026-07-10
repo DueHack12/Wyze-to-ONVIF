@@ -1,5 +1,5 @@
 name: RTSP to ONVIF for UniFi Protect
-version: "1.0.8"
+version: "1.0.0"
 slug: rtsp_to_onvif
 # The build base is HA's s6-overlay image; s6 must run as PID 1, so disable
 # Supervisor's default docker --init (tini).
@@ -14,10 +14,11 @@ startup: services
 boot: auto
 host_network: true
 # NET_ADMIN lets run.sh create the macvlan camera interfaces, run dhclient, and
-# install the arptables anti-ARP-flux rule. We deliberately do NOT use
+# install the nftables anti-ARP-flux rule. We deliberately do NOT use
 # full_access: it forces the add-on security rating to the floor and, because
 # host-network containers get a read-only /proc/sys, still can't set the ARP
-# sysctls anyway — arptables (NET_ADMIN only) is used instead. See run.sh.
+# sysctls anyway — an nftables arp rule (NET_ADMIN only) is used instead.
+# See run.sh.
 privileged:
   - NET_ADMIN
 options:
