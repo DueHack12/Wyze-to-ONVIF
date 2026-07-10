@@ -1,12 +1,15 @@
 name: RTSP to ONVIF for UniFi Protect
-version: "1.0.5"
+version: "1.0.6"
 slug: rtsp_to_onvif
 # The build base is HA's s6-overlay image; s6 must run as PID 1, so disable
 # Supervisor's default docker --init (tini).
 init: false
-# Needed so run.sh can write the arp_ignore/arp_announce sysctls (macvlan ARP
-# flux otherwise makes the router report an IP conflict on the host IP);
-# /proc/sys is read-only without it.
+# full_access runs the container fully privileged (all capabilities incl.
+# NET_ADMIN, and a writable /proc/sys). It is REQUIRED so run.sh can set the
+# arp_ignore/arp_announce sysctls — without them the macvlan camera interfaces
+# answer ARP for the host's own IP (ARP flux) and UniFi reports an IP conflict.
+# NOTE: HA forbids combining full_access with `privileged`, so NET_ADMIN is not
+# listed separately — full_access already grants it.
 full_access: true
 description: Expose RTSP streams (e.g. docker-wyze-bridge) as virtual ONVIF cameras adoptable by UniFi Protect
 url: https://github.com/dlo747/RTSP-to-ONVIF-Unifi-Protect
@@ -17,8 +20,6 @@ arch:
 startup: services
 boot: auto
 host_network: true
-privileged:
-  - NET_ADMIN
 options:
   interface: eth0
   debug: false
