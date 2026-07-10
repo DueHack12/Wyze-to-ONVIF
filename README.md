@@ -1,15 +1,20 @@
 # RTSP to ONVIF for UniFi Protect
 
-[![Home Assistant Add-on](https://img.shields.io/badge/Home%20Assistant-Add--on-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/addons/)
+[![Home Assistant App](https://img.shields.io/badge/Home%20Assistant-App-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A Home Assistant add-on that turns any RTSP stream into a virtual **ONVIF camera** that **UniFi Protect** can adopt as a third-party camera.
+> [!NOTE]
+> **This project is essentially entirely AI-generated.** The code, configuration, and documentation were produced with an AI assistant (Claude). It is working and in active use, but please review it yourself before deploying it in your own environment.
 
-It's built for exposing [docker-wyze-bridge](https://github.com/IDisposable/docker-wyze-bridge) streams (Wyze cameras) to Protect, but it works with any H.264 RTSP source.
+A Home Assistant app (add-on) that turns any RTSP stream into a virtual **ONVIF camera** that **UniFi Protect** can adopt as a third-party camera.
+
+It's built for exposing [docker-wyze-bridge](https://github.com/mrlt8/docker-wyze-bridge) streams (Wyze cameras) to Protect, but it works with any H.264 RTSP source.
 
 ## How it works
 
-Each camera you configure becomes its own virtual ONVIF device — a macvlan network interface on your LAN with its own MAC address and DHCP-assigned IP. Protect discovers and adopts it like a real ONVIF camera, while the add-on proxies the RTSP stream through from your source. Under the hood it wraps [dlo747/RTSP-to-ONVIF-Unifi-Protect](https://github.com/dlo747/RTSP-to-ONVIF-Unifi-Protect).
+Each camera you configure becomes its own virtual ONVIF device — a macvlan network interface on your LAN with its own MAC address and DHCP-assigned IP. Protect discovers and adopts it like a real ONVIF camera, while the app proxies the RTSP stream through from your source. Under the hood it wraps [dlo747/RTSP-to-ONVIF-Unifi-Protect](https://github.com/dlo747/RTSP-to-ONVIF-Unifi-Protect).
+
+> Home Assistant recently renamed **Add-ons** to **Apps**. This project is a Home Assistant app; if your Home Assistant still says "Add-ons", it's the same thing.
 
 ## Features
 
@@ -21,22 +26,22 @@ Each camera you configure becomes its own virtual ONVIF device — a macvlan net
 
 ## Prerequisites
 
-- **Home Assistant OS or Supervised** (add-ons required).
-- **Wired Ethernet on the Home Assistant host.** The add-on creates a macvlan interface per camera; this does not work over Wi-Fi.
-- An **RTSP source** — e.g. the [docker-wyze-bridge](https://github.com/mrlt8/docker-wyze-bridge) add-on.
+- **Home Assistant OS or Supervised** (apps/add-ons required).
+- **Wired Ethernet on the Home Assistant host.** The app creates a macvlan interface per camera; this does not work over Wi-Fi.
+- An **RTSP source** — e.g. the [docker-wyze-bridge](https://github.com/mrlt8/docker-wyze-bridge) app.
 - **UniFi Protect** with third-party ONVIF cameras enabled: *Protect → Settings → System → Advanced → Discover Third-Party Cameras*.
 - The Home Assistant host and the UniFi Protect console on the **same L2 network/VLAN**, or a route between them.
 - If you use VLAN firewall rules, they must **allow traffic to the virtual camera IPs** (see [Troubleshooting](#troubleshooting)).
 
 ## Installation
 
-1. In Home Assistant, go to **Settings → Add-ons → Add-on Store**.
+1. In Home Assistant, go to **Settings → Apps → App Store** (older versions: *Settings → Add-ons → Add-on Store*).
 2. Open the **⋮** menu (top-right) → **Repositories**, paste this repository URL, and click **Add**:
    ```
    https://github.com/DueHack12/Wyze-to-ONVIF
    ```
 3. Find **RTSP to ONVIF for UniFi Protect** in the store and click **Install**.
-4. Open the **Configuration** tab, fill it in (below), then **Start** the add-on.
+4. Open the **Configuration** tab, fill it in (below), then **Start** the app.
 
 ## Configuration
 
@@ -44,7 +49,7 @@ Each camera you configure becomes its own virtual ONVIF device — a macvlan net
 
 | Option | Required | Description |
 |---|---|---|
-| `interface` | yes | The Home Assistant host's Ethernet interface to attach the virtual cameras to (e.g. `eth0`, `end0`). The camera IPs come from this interface's subnet via DHCP. If you're unsure of the name, start the add-on once — the log lists the available interfaces. |
+| `interface` | yes | The Home Assistant host's Ethernet interface to attach the virtual cameras to (e.g. `eth0`, `end0`). The camera IPs come from this interface's subnet via DHCP. If you're unsure of the name, start the app once — the log lists the available interfaces. |
 | `debug` | no | Verbose ONVIF-server logging. Default `false`. |
 | `cameras` | yes | List of virtual cameras (see below). |
 
@@ -89,14 +94,14 @@ cameras:
 
 ## Adopting in UniFi Protect
 
-1. Start the add-on and open its **Log**. For each camera you should see the interface created, a DHCP lease, and `SERVER: <name> — HTTP listening on <ip>:8081`. The virtual cameras appear on your network with MAC prefix `1A:11:B0`.
+1. Start the app and open its **Log**. For each camera you should see the interface created, a DHCP lease, and `SERVER: <name> — HTTP listening on <ip>:8081`. The virtual cameras appear on your network with MAC prefix `1A:11:B0`.
 2. In Protect, the cameras are usually discovered automatically. If not, use **Protect → Devices → Can't find your device? → advanced adoption** and enter the camera's virtual IP with ONVIF port `8081`. Third-party cameras don't need credentials from this proxy — if prompted, any username/password works.
 
 ## Troubleshooting
 
 - **UniFi VLAN/firewall rules.** If Protect can't pull the stream, make sure your firewall policy allows traffic to the **virtual camera IPs** — not just the Home Assistant host. Add the camera IPs (and the RTSP source host) to the relevant allow rule.
-- **"IP address conflict" on the host IP.** The virtual cameras share the host's L2 network, so by default the host would answer ARP for its own IP out of the camera interfaces (ARP flux), and UniFi flags a conflict. The add-on installs an nftables rule on startup to suppress this automatically — no action needed. (The usual `arp_ignore` sysctl can't be used because host-network add-on containers get a read-only `/proc/sys`.)
-- **Wrong interface.** If no interfaces come up, double-check the `interface` option against the names printed in the add-on log at startup, and confirm the host is on wired Ethernet.
+- **"IP address conflict" on the host IP.** The virtual cameras share the host's L2 network, so by default the host would answer ARP for its own IP out of the camera interfaces (ARP flux), and UniFi flags a conflict. The app installs an nftables rule on startup to suppress this automatically — no action needed. (The usual `arp_ignore` sysctl can't be used because host-network app containers get a read-only `/proc/sys`.)
+- **Wrong interface.** If no interfaces come up, double-check the `interface` option against the names printed in the app log at startup, and confirm the host is on wired Ethernet.
 - **`Failed to find IP address for MAC address ...`.** The macvlan interface didn't get a DHCP lease. Check the `interface` option, the Ethernet connection, and that your DHCP server has free leases (a fixed reservation in your router makes IPs stable).
 - **Camera offline.** A black tile in Protect for a camera whose physical source is offline is expected; it recovers when the source stream returns.
 
@@ -104,11 +109,11 @@ cameras:
 
 - Streams must be **H.264** (wyze-bridge's default).
 - PTZ, two-way audio, and smart detections are not available for third-party ONVIF cameras in Protect. Snapshots and timeline scrubbing depend on upstream and can be inconsistent.
-- Uninstalling the add-on clears its `/data`, so the generated MACs are lost and Protect will see new devices on reinstall.
+- Uninstalling the app clears its `/data`, so the generated MACs are lost and Protect will see new devices on reinstall.
 
 ## Credits
 
-- [dlo747/RTSP-to-ONVIF-Unifi-Protect](https://github.com/dlo747/RTSP-to-ONVIF-Unifi-Protect) — the ONVIF server this add-on wraps.
+- [dlo747/RTSP-to-ONVIF-Unifi-Protect](https://github.com/dlo747/RTSP-to-ONVIF-Unifi-Protect) — the ONVIF server this app wraps.
 - [docker-wyze-bridge](https://github.com/mrlt8/docker-wyze-bridge) — the usual RTSP source.
 
 ## License

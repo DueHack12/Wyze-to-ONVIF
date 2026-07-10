@@ -1,13 +1,13 @@
 # RTSP to ONVIF for UniFi Protect
 
 Wraps [dlo747/RTSP-to-ONVIF-Unifi-Protect](https://github.com/dlo747/RTSP-to-ONVIF-Unifi-Protect)
-as a Home Assistant add-on. Each configured camera becomes a virtual ONVIF
-device with its own MAC address and DHCP-assigned IP on your LAN, adoptable
-by UniFi Protect as a third-party camera.
+as a Home Assistant app (add-on). Each configured camera becomes a virtual
+ONVIF device with its own MAC address and DHCP-assigned IP on your LAN,
+adoptable by UniFi Protect as a third-party camera.
 
 ## Requirements
 
-- **Ethernet.** The add-on creates one macvlan interface per camera on the
+- **Ethernet.** The app creates one macvlan interface per camera on the
   host's network interface. This does not work over Wi-Fi.
 - Home Assistant and your UniFi Protect console on the same L2 network/VLAN
   (or a route for ONVIF/RTSP traffic between them).
@@ -19,7 +19,7 @@ by UniFi Protect as a third-party camera.
 
 | Option | Description |
 |---|---|
-| `interface` | Host network interface to attach virtual camera interfaces to. On a Raspberry Pi this is usually `eth0` or `end0` — if you guess wrong, the add-on log lists the available names at startup. |
+| `interface` | Host network interface to attach virtual camera interfaces to. On a Raspberry Pi this is usually `eth0` or `end0` — if you guess wrong, the app log lists the available names at startup. |
 | `debug` | Verbose logging from the ONVIF server. |
 | `cameras` | List of virtual cameras, see below. |
 
@@ -62,7 +62,7 @@ cameras:
 
 ## Adopting in UniFi Protect
 
-1. Start the add-on and open its log. For each camera you should see the
+1. Start the app and open its log. For each camera you should see the
    macvlan interface being created (`NET_CONF: ADD - rtsp2onvif_N`), a DHCP
    lease, and `HTTP listening on <ip>:8081`. The virtual cameras appear in
    your UniFi client list with MAC prefix `1A:11:B0`.
@@ -80,16 +80,16 @@ cameras:
 - **"IP address conflict" on the host IP.** The virtual cameras share the
   host's L2 network, so the host would otherwise answer ARP for its own IP out
   of the camera interfaces (ARP flux), which UniFi flags as a conflict. The
-  add-on installs an nftables `arp`-family rule on every start to suppress
+  app installs an nftables `arp`-family rule on every start to suppress
   this automatically — no action needed. (The usual `arp_ignore` sysctl can't
-  be used: host-network add-on containers get a read-only `/proc/sys`.)
+  be used: host-network app containers get a read-only `/proc/sys`.)
 
 ## Notes and limitations
 
 - Streams must be H.264 (wyze-bridge outputs H.264 by default). PTZ, audio
   playback, and smart detections are not available for third-party cameras
   in Protect; snapshots and timeline scrubbing are hit-or-miss upstream.
-- Generated MACs/UUIDs live in `/data/onvif.yaml`. Uninstalling the add-on
+- Generated MACs/UUIDs live in `/data/onvif.yaml`. Uninstalling the app
   deletes `/data`, and Protect will then see brand-new cameras on reinstall.
 - If a camera fails with `Failed to find IP address for MAC address ...`,
   the macvlan interface didn't get created or didn't get a DHCP lease —

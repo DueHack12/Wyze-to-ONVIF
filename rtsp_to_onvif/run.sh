@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# Translate the add-on options (/data/options.json) into the onvif.yaml the
+# Translate the app options (/data/options.json) into the onvif.yaml the
 # upstream server expects. The result lives in /data so the MAC addresses and
 # UUIDs the server generates and writes back survive restarts and rebuilds —
 # UniFi Protect identifies cameras by MAC, so these must stay stable.
@@ -9,7 +9,7 @@ node /ha-config.js
 
 CAMERA_COUNT=$(node -p "(require('/data/options.json').cameras || []).length")
 if [ "$CAMERA_COUNT" = "0" ]; then
-    echo "[run.sh] No cameras configured yet. Add cameras in the add-on Configuration tab and restart the add-on."
+    echo "[run.sh] No cameras configured yet. Add cameras in the app Configuration tab and restart the app."
     exec tail -f /dev/null
 fi
 
